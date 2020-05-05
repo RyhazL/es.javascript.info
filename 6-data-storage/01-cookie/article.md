@@ -1,80 +1,80 @@
 # Cookies, document.cookie
 
-Cookies are small strings of data that are stored directly in the browser. They are a part of HTTP protocol, defined by [RFC 6265](https://tools.ietf.org/html/rfc6265) specification.
+Las cookies son pequeñas cadenas de datos que se almacenan directamente en el navegador. Forman parte del protocolo HTTP, definido por las especificaciones [RFC 6265](https://tools.ietf.org/html/rfc6265).
 
-Most of the time, cookies are set by a web server. Then they are automatically added to every request to the same domain.
+La mayoría de las veces, las cookies son establecidas por un servidor web. Luego son agregadas automáticamente a cada solicitud hecha al mismo dominio.
 
-One of the most widespread use cases is authentication:
+Uno de los casos de uso más comunes es la autentificación:
 
-1. Upon sign in, the server uses `Set-Cookie` HTTP-header in the response to set a cookie with "session identifier".
-2. Next time when the request is set to the same domain, the browser sends the over the net using `Cookie` HTTP-header.
-3. So the server knows who made the request.
+1. Al iniciar sesión, el servidor utiliza el header-HTTP `Set-Cookie` en la respuesta para establecer una cookie con el "identificador de sesión"
+2. Después, cuando la solicitud es enviada al mismo dominio, el navegador lo envía usando el header-HTTP `Cookie`.
+3. De esta manera, el servidor sabe quién hizo la solicitud.
 
-We can also access cookies from the browser, using `document.cookie` property.
+También podemos acceder a las cookies desde el navegador, utilizando la propiedad `document.cookie`.
 
-There are many tricky things about cookies and their options. In this chapter we'll cover them in detail.
+Hay muchas cosas complejas sobre uso el de las cookies y sus opciones. En este capitulo las discutiremos en detalle.
 
-## Reading from document.cookie
+## Leyendo desde document.cookie
 
 ```online
-Do you have any cookies on this site? Let's see:
+¿Tienes alguna cookie en este sitio? Veamos:
 ```
 
 ```offline
-Assuming you're on a website, it's possible to see the cookies, like this:
+Suponiendo que estés en un sitio web, es posible ver las cookies, así:
 ```
 
 ```js run
-// At javascript.info, we use Google Analytics for statistics,
-// so there should be some cookies
-alert( document.cookie ); // cookie1=value1; cookie2=value2;...
+// En javascript.info, usamos Google Analytics para las estadísticas,
+// por tanto debería haber algunos.
+alert( document.cookie ); // cookie1=valor1; cookie2=valor2;...
 ```
 
 
-The value of `document.cookie` consists of `name=value` pairs, delimited by `; `. Each one is a separate cookie.
+El valor de `document.cookie` consiste en pares de `nombre=valor`, separados por `;`. En donde cada par es una cookie.
 
-To find a particular cookie, we can split `document.cookie` by `; `, and then find the right name. We can use either a regular expression or array functions to do that.
+Para encontrar una cookie en específico, podemos dividir (split) `document.cookie` entre `;`, y luego encontrarla por su nombre. Para hacerlo, podemos usar ya sea una expresión regular o las funciones de de la clase Array.
 
-We leave it as an excercise for the reader. Also, at the end of the chapter you'll find helper functions to manipulate cookies.
+Lo dejaremos como practica para el lector. Además, al final del capítulo encontrará funciones útiles para manipular las cookies.
 
-## Writing to document.cookie
+## Escribiendo en document.cookie
 
-We can write to `document.cookie`. But it's not a data property, it's an accessor.
+Podemos escribir en `document.cookie`. Pero no es una propiedad de datos, es un descriptor de acceso.
 
-**A write operation to `document.cookie` passes through the browser that updates cookies mentioned in it, but doesn't touch other cookies.**
+**Una operación de escritura en `document.cookie` actualiza solo las cookies mencionadas, y no toca las demás.**
 
-For instance, this call sets a cookie with the name `user` and value `John`:
+Por ejemplo, esta llamada establece una cookie con el nombre `user` y el valor` John`:
 
 ```js run
-document.cookie = "user=John"; // update only cookie named 'user'
-alert(document.cookie); // show all cookies
+document.cookie = "user=John"; // actualiza solo la cookie llamada 'user'
+alert(document.cookie); // muestra todas las cookies
 ```
 
-If you run it, then probably you'll see multiple cookies. That's because `document.cookie=` operation does not overwrite all cookies. It only sets the mentioned cookie `user`.
+Si lo ejecutas, entonces probablemente verás múltiples cookies. Esto se debe a que la operación `document.cookie =` no sobrescribe todas las cookies. Solo establece la cookie llamada `user`.
 
-Technically, name and value can have any characters, but to keep the formatting valid they should be escaped using a built-in `encodeURIComponent` function:
+Técnicamente, el nombre y el valor pueden tener cualquier carácter, pero para mantener un formato válido, se debe escapar la secuencia mediante la función incorporada `encodeURIComponent`:
 
 ```js run
-// special values, need encoding
-let name = "my name";
+// valores especiales, necesitan codificación
+let name = "mi nombre";
 let value = "John Smith"
 
-// encodes the cookie as my%20name=John%20Smith
+// encodes the cookie as mi%20nombre=John%20Smith
 document.cookie = encodeURIComponent(name) + '=' + encodeURIComponent(value);
 
-alert(document.cookie); // ...; my%20name=John%20Smith
+alert(document.cookie); // ...; mi%20nombre=John%20Smith
 ```
 
 
-```warn header="Limitations"
-There are few limitations:
-- The `name=value` pair, after `encodeURIComponent`, should not exceed 4kb. So we can't store anything huge in a cookie.
-- The total number of cookies per domain is limited to around 20+, the exact limit depends on a browser.
+```warn header="Limitaciones"
+Hay algunas limitaciones:
+- El par `nombre=valor`, despues de `encodeURIComponent`, no debe exceder los 4kb. Ya que no podemos guardar nada muy grande en una cookie.
+- El total de cookies por dominio que se puede usar ronda los 20+, el valor de dicho límite varia según el navegador en uso.
 ```
 
-Cookies have several options, many of them are important and should be set.
+Las cookies poseen muchas opciones, muchas de ellas son importantes y deben ser asignadas.
 
-The options are listed after `key=value`, delimited by `;`, like this:
+Las opciones se enumeran después de `clave=valor`, separadas por`;`, como se muestra a continuación:
 
 ```js run
 document.cookie = "user=John; path=/; expires=Tue, 19 Jan 2038 03:14:07 GMT"
@@ -84,28 +84,28 @@ document.cookie = "user=John; path=/; expires=Tue, 19 Jan 2038 03:14:07 GMT"
 
 - **`path=/mypath`**
 
-The url path prefix, where the cookie is accessible. Must be absolute. By default, it's the current path.
+La ruta prefijo de la URL, donde se puede acceder a la cookie. Debe ser absoluta. Por defecto, es la ruta actual.
 
-If a cookie is set with `path=/admin`, it's visible at pages `/admin` and `/admin/something`, but not at `/home` or `/adminpage`.
+Si a una cookie se le asigna `path=/admin`, es visible en las páginas`/admin` y `/admin/algomas`, pero no en`/inicio` o `/adminpage`.
 
-Usually, we set `path=/` to make the cookie accessible from all website pages.
+Por lo general, se asigna como `path=/` para que la cookie sea accesible desde todas las páginas del sitio web.
 
 ## domain
 
 - **`domain=site.com`**
 
-A domain where the cookie is accessible. In practice though, there are limitations. We can't set any domain.
+El dominio donde se puede acceder a la cookie. En la práctica sin embargo, hay restricciones. No podemos establecer cualquier dominio.
 
-By default, a cookie is accessible only at the domain that set it. So, if the cookie was set by `site.com`, we won't get it `other.com`.
+Por defecto, solo se puede acceder a una cookie en el dominio que la asigno. Por lo tanto, si la cookie fue asignada por `site.com`, no la podremos usar en `other.com`.
 
-...But what's more tricky, we also won't get the cookie at a subdomain `forum.site.com`!
+... Por si fuera poco, ¡tampoco obtendremos la cookie en nuestro subdominio `forum.site.com`!
 
 ```js
-// at site.com
+// En site.com
 document.cookie = "user=John"
 
-// at forum.site.com
-alert(document.cookie); // no user
+// En forum.site.com
+alert(document.cookie); // no hay cookie "user"
 ```
 
 **There's no way to let a cookie be accessible from another 2nd-level domain, so `other.com` will never receive a cookie set at `site.com`.**
